@@ -27,7 +27,7 @@ public class Test8 {
         SingleOutputStreamOperator<Tuple2<String, Integer>> count_window = tupleDataStream.keyBy(tuple -> tuple.f0)
                 //定义统计窗口操作。窗口一般的包含相关的聚集函数的。
                 //窗口中包含了3个元素，1代表的是窗口执行元素的个数，即一个元素触发一次计算。
-                .countWindow(3, 1)
+                .countWindow(3, 3)
                 .sum(1)
                 .uid("count_window");
         count_window.map(cnt -> "====" + cnt).print();
