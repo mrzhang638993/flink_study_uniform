@@ -42,7 +42,7 @@ public class Test7 {
         env.getCheckpointConfig().setExternalizedCheckpointCleanup(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
         //flink任务出现失败的情况下,设置重启策略实现机制。flink任务失败对应的设置重启机制。
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 5000));
-        //设置失败率重启机制,根据错误率实现相关的机制。
+        //设置失败率重启机制,根据错误率实现相关的机制。失败率重启机制很少使用,没有必要太多的关注的。
         env.setRestartStrategy(RestartStrategies.failureRateRestart(3,Time.seconds(5000),Time.seconds(5000)));
         List<Tuple2<String, Integer>> tuple2s = new ArrayList<>();
         tuple2s.add(Tuple2.of("key1", 3));
