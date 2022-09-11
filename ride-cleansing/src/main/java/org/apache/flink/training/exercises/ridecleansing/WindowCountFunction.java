@@ -2,6 +2,8 @@ package org.apache.flink.training.exercises.ridecleansing;
 
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.api.scala.typeutils.Types;
@@ -16,25 +18,31 @@ import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WindowCountFunction extends ProcessWindowFunction<Tuple2<String, Integer>, Tuple2<String, Integer>, String, TimeWindow> implements CheckpointedFunction {
+public class WindowCountFunction extends ProcessWindowFunction<Tuple2<String, Integer>, Integer, String, TimeWindow> implements CheckpointedFunction {
     private ListState<Tuple2<String, Integer>> state;
-    ListStateDescriptor<Tuple2<String, Integer>> descriptor = new ListStateDescriptor<Tuple2<String, Integer>>("listState", new TupleTypeInfo(Types.STRING(), Types.INT()));
+    private ListStateDescriptor<Tuple2<String, Integer>> descriptor = new ListStateDescriptor<Tuple2<String, Integer>>("listState", new TupleTypeInfo(Types.STRING(), Types.INT()));
     private List<Tuple2<String, Integer>> bufferedElements = new ArrayList<>();
+    private ValueState<Integer> value;
+    private ValueStateDescriptor<Integer> valueStateDescriptor = new ValueStateDescriptor<Integer>("valueState", Types.INT(), 0);
+
 
     @Override
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
         state = getRuntimeContext().getListState(descriptor);
+        value = getRuntimeContext().getState(valueStateDescriptor);
     }
 
     @Override
-    public void process(String key, Context context, Iterable<Tuple2<String, Integer>> elements, Collector<Tuple2<String, Integer>> out) throws Exception {
+    public void process(String key, Context context, Iterable<Tuple2<String, Integer>> elements, Collector<Integer> out) throws Exception {
         //elements代表的是窗口中的所有的元素信息的。
         for (Tuple2<String, Integer> element : elements) {
-            out.collect(element);
+            Integer value = this.value.value();
+            this.value.update(value + 1);
             state.add(element);
             bufferedElements.add(element);
         }
+        out.collect(value.value());
     }
 
     @Override
