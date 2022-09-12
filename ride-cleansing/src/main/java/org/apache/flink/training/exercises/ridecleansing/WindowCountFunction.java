@@ -18,6 +18,7 @@ import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.List;
 
+//统计总量的数据信息。
 public class WindowCountFunction extends ProcessWindowFunction<Tuple2<String, Integer>, Integer, String, TimeWindow> implements CheckpointedFunction {
     private ListState<Tuple2<String, Integer>> state;
     private ListStateDescriptor<Tuple2<String, Integer>> descriptor = new ListStateDescriptor<Tuple2<String, Integer>>("listState", new TupleTypeInfo(Types.STRING(), Types.INT()));
@@ -42,6 +43,7 @@ public class WindowCountFunction extends ProcessWindowFunction<Tuple2<String, In
             state.add(element);
             bufferedElements.add(element);
         }
+        //对应的是每个窗口的执行时间的。
         out.collect(value.value());
     }
 
