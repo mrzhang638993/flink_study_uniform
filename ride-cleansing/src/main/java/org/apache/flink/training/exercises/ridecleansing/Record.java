@@ -1,7 +1,9 @@
 package org.apache.flink.training.exercises.ridecleansing;
 
+import java.io.Serializable;
+
 //进入的Event的记录信息
-public class Record {
+public class Record implements Serializable {
     private int id;
     private long time;
 
@@ -19,5 +21,13 @@ public class Record {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "id=" + id +
+                ", time=" + time +
+                '}';
     }
 }
