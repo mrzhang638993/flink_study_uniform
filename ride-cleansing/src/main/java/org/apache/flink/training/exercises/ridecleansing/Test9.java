@@ -29,6 +29,7 @@ public class Test9 {
         SingleOutputStreamOperator<Integer> count_window = tupleDataStream.keyBy(tuple -> tuple.f0)
                 //定义统计窗口操作。窗口一般的包含相关的聚集函数的。
                 //窗口中包含了3个元素，1代表的是窗口执行元素的个数，即一个元素触发一次计算。
+                //定义了窗口的起始时间间隔，定义了窗口的范围。
                 .window(SlidingEventTimeWindows.of(Time.seconds(1), Time.seconds(1)))
                 .process(new WindowCountFunction())
                 .uid("count_window");
