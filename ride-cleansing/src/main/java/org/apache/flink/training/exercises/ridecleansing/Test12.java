@@ -16,6 +16,7 @@ import org.apache.flink.util.OutputTag;
 //测试基于eventTime的窗口的触发操作时间的.窗口的结束时间>=eventTime的时间+延时时间，超过这个限制的话，数据会丢失的。
 //基于数据延迟存在如下的处理思路的:1.丢弃数据；2.增加延时机制，不建议使用，会导致更多的问题；3.使用sideOutPutstream来处理统计丢弃的数据占比，确保数据的可用性。
 public class Test12 {
+    //还缺少状态存储,重启策略的配置要素等的。是个很关键的要素的，需要关注。
     public static void main(String[] args) throws Exception {
         //测试能否收集到执行过程中的数据丢失情况？一般的在内网的环境下面是不存在数据丢失的情况的,内网的环境下面可以保证数据的完全的不丢失的。
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(new Configuration());
