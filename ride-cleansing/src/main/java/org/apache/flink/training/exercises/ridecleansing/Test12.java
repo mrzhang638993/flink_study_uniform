@@ -8,6 +8,7 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.OutputTag;
 
@@ -30,7 +31,9 @@ public class Test12 {
         OutputTag<SocketPo> outputTag = new OutputTag<SocketPo>("late_date") {
         };
         //固定时间窗口的话,滑动时间可以设置为0的参数。
-        SingleOutputStreamOperator<SocketPo> sideOutput = source.keyBy(po -> po.getKey()).window(SlidingEventTimeWindows.of(Time.seconds(2), Time.seconds(1)))
+        //滚动元素是没有重叠时间的，可以设置固定大小的窗口的。
+        //global window对应的是没有窗口的信息的？
+        SingleOutputStreamOperator<SocketPo> sideOutput = source.keyBy(po -> po.getKey()).window(TumblingEventTimeWindows.of(Time.seconds(2)))
                 .sideOutputLateData(outputTag)//对应的是在处理元素之前的操作的
                 .evictor(new MyEvictor())//在窗口计算之前执行元素的剔除操作。
                 .trigger(new MyTestTrigger())
