@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.state.StateDescriptor;
+import org.apache.flink.api.common.state.StateTtlConfig;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.time.Time;
@@ -48,7 +49,7 @@ public class Test7 {
         //flink任务出现失败的情况下,设置重启策略实现机制。flink任务失败对应的设置重启机制。
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 5000));
         //设置失败率重启机制,根据错误率实现相关的机制。失败率重启机制很少使用,没有必要太多的关注的。
-        env.setRestartStrategy(RestartStrategies.failureRateRestart(3,Time.seconds(5000),Time.seconds(5000)));
+        env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.seconds(5000), Time.seconds(5000)));
         List<Tuple2<String, Integer>> tuple2s = new ArrayList<>();
         tuple2s.add(Tuple2.of("key1", 3));
         tuple2s.add(Tuple2.of("key1", 5));
@@ -60,20 +61,30 @@ public class Test7 {
         SingleOutputStreamOperator<Long> process = tupleDataStream.keyBy(tuple -> tuple.f0).process(new KeyedProcessFunction<String, Tuple2<String, Integer>, Long>() {
             //对应的是在整个的taskManager中执行的,对应的每一个taskManager都会执行一次打印操作的，整个需要关注一下。
             private ValueState<Long> valueState;
+
             @Override
             public void open(Configuration parameters) throws Exception {
                 super.open(parameters);
                 ExecutionConfig.GlobalJobParameters globalJobParameters = getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
                 //对应的每一个taskManager都会执行一次的，所以，会存在多次打印的。设置并行度为1的话，只会打印一次数据的
                 System.out.println("====" + JSON.toJSONString(globalJobParameters));
-                ValueStateDescriptor descriptor=new ValueStateDescriptor("value", Types.LONG());
-                valueState=getRuntimeContext().getState(descriptor);
+                ValueStateDescriptor descriptor = new ValueStateDescriptor("value", Types.LONG());
+                StateTtlConfig stateTtlConfig = StateTtlConfig.newBuilder(Time.seconds(5000))
+                        .cleanupFullSnapshot()
+                        .cleanupIncrementally(1000, true)
+                        .cleanupInRocksdbCompactFilter(1000)
+                        .setUpdateType(StateTtlConfig.UpdateType.OnCreateAndWrite)
+                        .setTtl(Time.seconds(5000))
+                        .build();
+                //可以配置ttl的过期时间配置的。
+                descriptor.enableTimeToLive(stateTtlConfig);
+                valueState = getRuntimeContext().getState(descriptor);
             }
 
             @Override
             public void processElement(Tuple2<String, Integer> value, Context ctx, Collector<Long> out) throws Exception {
                 out.collect(1L);
-                ctx.timerService().registerEventTimeTimer(valueState.value()+5000);
+                ctx.timerService().registerEventTimeTimer(valueState.value() + 5000);
             }
 
             @Override
