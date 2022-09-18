@@ -29,7 +29,9 @@ public class Test13 {
         //使用全局的window的话，对应的是没有相关的触发器的，需要自定义相关的触发器实现触发操作的
         SingleOutputStreamOperator<SocketPo> sum = source.windowAll(GlobalWindows.create())
                 //globalWindow配置触发器实现触发操作实现，很关键的要素操作
-                .trigger(CountTrigger.of(3))
+                //.trigger(CountTrigger.of(3))
+                //自定义触发器实现
+                .trigger(new GlobalWindowTrigger())
                 .sum(1)
                 .uid("sum")
                 .name("sum_global");
