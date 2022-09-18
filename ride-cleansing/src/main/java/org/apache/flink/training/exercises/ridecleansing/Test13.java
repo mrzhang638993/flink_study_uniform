@@ -8,7 +8,6 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
 import org.apache.flink.streaming.api.windowing.assigners.GlobalWindows;
-import org.apache.flink.streaming.api.windowing.triggers.CountTrigger;
 import org.apache.flink.util.OutputTag;
 
 //globalWindow_trigger 可以实现自定义各种类型的window实现规则的,是很关键的操作的。
