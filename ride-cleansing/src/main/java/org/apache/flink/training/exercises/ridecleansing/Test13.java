@@ -10,6 +10,7 @@ import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
 import org.apache.flink.streaming.api.windowing.assigners.GlobalWindows;
 import org.apache.flink.util.OutputTag;
 
+//evict可以实现元素的移除操作。结合实现元素的各种功能新的替代操作实现的,可以实现更加丰富的功能实现。
 //globalWindow_trigger 可以实现自定义各种类型的window实现规则的,是很关键的操作的。
 public class Test13 {
     public static void main(String[] args) throws Exception {
