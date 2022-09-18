@@ -18,7 +18,7 @@ public class WaterGenerator implements WatermarkGenerator<Record> {
     //生成水印标志信息
     @Override
     public void onPeriodicEmit(WatermarkOutput output) {
-        //生成水印标志
-        output.emitWatermark(new Watermark(currentTimeStamp));
+        //生成水印标志,允许乱序时间5秒钟。
+        output.emitWatermark(new Watermark(currentTimeStamp-5000));
     }
 }

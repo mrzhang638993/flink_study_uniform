@@ -9,6 +9,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
+//引入watermark的话，数据还是会重复计算的，使用窗口操作的话，不可避免的导致数据的重复计算操作的。
 //使用EventTime完成相关的事件生成机制和实现操作
 public class Test11 {
     public static void main(String[] args) throws Exception {
@@ -20,7 +21,7 @@ public class Test11 {
         //定义waterMark生成策略和实现机制
         SingleOutputStreamOperator<Record> operator = env.addSource(new MySourceFunction())
                 //定义WatermarkGenerator 以及对应的TimestampAssigner数据信息
-                .assignTimestampsAndWatermarks(WatermarkStrategy.forGenerator((ctx) -> new WaterGenerator()).withTimestampAssigner(ctx -> new CountAssigner()))
+                .assignTimestampsAndWatermarks (WatermarkStrategy.forGenerator((ctx) -> new WaterGenerator()).withTimestampAssigner(ctx -> new CountAssigner()))
                 .name("source_code")
                 .uid("source_code");
         //对应的执行逻辑,使用EventTime时间窗口执行操作
