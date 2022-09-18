@@ -1,9 +1,7 @@
 package org.apache.flink.training.exercises.ridecleansing;
 
-import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.streaming.api.windowing.evictors.Evictor;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.streaming.api.windowing.windows.Window;
 import org.apache.flink.streaming.runtime.operators.windowing.TimestampedValue;
 
 import java.util.Iterator;
