@@ -3,11 +3,16 @@ package org.apache.flink.training.exercises.ridecleansing;
 import com.alibaba.fastjson2.JSON;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.common.state.StateDescriptor;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.api.scala.typeutils.Types;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
+import org.apache.flink.runtime.state.JavaSerializer;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -54,17 +59,27 @@ public class Test7 {
         DataStreamSource<Tuple2<String, Integer>> tupleDataStream = env.fromCollection(tuple2s);
         SingleOutputStreamOperator<Long> process = tupleDataStream.keyBy(tuple -> tuple.f0).process(new KeyedProcessFunction<String, Tuple2<String, Integer>, Long>() {
             //对应的是在整个的taskManager中执行的,对应的每一个taskManager都会执行一次打印操作的，整个需要关注一下。
+            private ValueState<Long> valueState;
             @Override
             public void open(Configuration parameters) throws Exception {
                 super.open(parameters);
                 ExecutionConfig.GlobalJobParameters globalJobParameters = getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
                 //对应的每一个taskManager都会执行一次的，所以，会存在多次打印的。设置并行度为1的话，只会打印一次数据的
                 System.out.println("====" + JSON.toJSONString(globalJobParameters));
+                ValueStateDescriptor descriptor=new ValueStateDescriptor("value", Types.LONG());
+                valueState=getRuntimeContext().getState(descriptor);
             }
 
             @Override
             public void processElement(Tuple2<String, Integer> value, Context ctx, Collector<Long> out) throws Exception {
                 out.collect(1L);
+                ctx.timerService().registerEventTimeTimer(valueState.value()+5000);
+            }
+
+            @Override
+            public void onTimer(long timestamp, OnTimerContext ctx, Collector<Long> out) throws Exception {
+                super.onTimer(timestamp, ctx, out);
+                //触发器触发数据操作的话，这样的话，可以从state中获取得到相关的状态信息。执行接口的调用操作和实现处理逻辑。
             }
         });
         process.print();

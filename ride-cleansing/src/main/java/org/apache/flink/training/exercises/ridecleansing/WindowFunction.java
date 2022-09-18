@@ -1,12 +1,10 @@
 package org.apache.flink.training.exercises.ridecleansing;
 
+import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Counter;
-import org.apache.flink.metrics.MetricGroup;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.streaming.api.windowing.windows.Window;
-import org.apache.flink.streaming.runtime.operators.windowing.functions.InternalProcessWindowContext;
 import org.apache.flink.util.Collector;
 
 public class WindowFunction extends ProcessWindowFunction<SocketPo, SocketPo, String, TimeWindow> {
@@ -28,5 +26,9 @@ public class WindowFunction extends ProcessWindowFunction<SocketPo, SocketPo, St
             windowMaxTime = Math.max(element.getTimeStamp(), windowMaxTime);
             out.collect(element);
         }
+        //生成一个数据到OutputStream中去
+        //context.output();
     }
+
+
 }
